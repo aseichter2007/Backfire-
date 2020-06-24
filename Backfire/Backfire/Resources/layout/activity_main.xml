@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <LinearLayout
+        android:orientation="vertical"
+        android:minWidth="25px"
+        android:minHeight="25px"
+        android:layout_width="match_parent"
+        android:layout_height="493.5dp"
+        android:layout_toLeftOf="@id/carInfo"
+        android:id="@+id/disclaimer"
+        android:gravity="center_horizontal">
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="7.5dp"
+            android:id="@+id/space36" />
+        <TextView
+            android:text="Backfire needs you."
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/textView14" />
+        <TextView
+            android:text="Backfire has not reached its final form! We need your help. \n"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:layout_width="320.0dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/textView13" />
+        <TextView
+            android:text="Backfire will use the data you provide. We will use a machine learning algorithm to identify irregularities for each vehicle  and failure, and provide an educated guess about the problem. \n \n In time, and with your participation, we will collect enough data to provide an accurate service to help average people diagnose problems, and give mechanics a quick and easy starting point to reduce diagnostic costs. \nSend us the sound of your problem, help us make a better world.  \n "
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:layout_width="320.0dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/textView15" />
+        <Button
+            android:text="Thank you!"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/buttonThankYou" />
+    </LinearLayout>
+    <LinearLayout
+        android:orientation="vertical"
+        android:minWidth="25px"
+        android:minHeight="25px"
+        android:layout_width="match_parent"
+        android:layout_height="583.6dp"
+        android:id="@+id/carInfo"
+        android:layout_marginBottom="0.0dp"
+        android:gravity="center_horizontal|top"
+        android:visibility="gone">
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="17.0dp"
+            android:id="@+id/space3" />
+        <TextView
+            android:text="Hello and thank you for contributing to Backfre!."
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/welcomeMessage"
+            android:foregroundGravity="center_vertical"
+            android:gravity="center_horizontal|top"
+            android:inputType="none" />
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="14.5dp"
+            android:id="@+id/space1" />
+        <TextView
+            android:text="Please enter information about your vechicle."
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/textView1" />
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="15.0dp"
+            android:id="@+id/space35" />
+        <ImageView
+            android:src="@android:drawable/ic_menu_gallery"
+            android:layout_width="match_parent"
+            android:layout_height="56.4dp"
+            android:id="@+id/mufflerBar" />
+        <TextView
+            android:text="Make:"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:layout_width="215.2dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/textView2" />
+        <AutoCompleteTextView
+            android:layout_width="365.0dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/carMake"
+            android:hint="Ford Toyota etc." />
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="21.0dp"
+            android:id="@+id/space23" />
+        <LinearLayout
+            android:orientation="horizontal"
+            android:minWidth="25px"
+            android:minHeight="25px"
+            android:layout_width="match_parent"
+            android:layout_height="36.6dp"
+            android:id="@+id/linearLayout3"
+            android:gravity="center_horizontal|bottom">
+            <TextView
+                android:text="Model:"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:layout_width="72.4dp"
+                android:layout_height="match_parent"
+                android:id="@+id/textView3" />
+            <Space
+                android:layout_width="29.7dp"
+                android:layout_height="match_parent"
+                android:id="@+id/space5" />
+            <TextView
+                android:text=", trim if you know it."
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="25.5dp"
+                android:id="@+id/textView5" />
+        </LinearLayout>
+        <AutoCompleteTextView
+            android:layout_width="365.0dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/carModel"
+            android:imeOptions="normal"
+            android:hint="Fiesta , ECO" />
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="23.2dp"
+            android:id="@+id/space2" />
+        <LinearLayout
+            android:orientation="horizontal"
+            android:minWidth="25px"
+            android:minHeight="25px"
+            android:layout_width="384.8dp"
+            android:layout_height="63.2dp"
+            android:id="@+id/linearLayout2"
+            android:gravity="center_horizontal">
+            <TextView
+                android:text="Year:"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:layout_width="wrap_content"
+                android:layout_height="38.5dp"
+                android:id="@+id/textView4" />
+            <EditText
+                android:inputType="number"
+                android:layout_width="48.4dp"
+                android:layout_height="52.6dp"
+                android:id="@+id/carYear"
+                android:hint="1998" />
+            <Space
+                android:layout_width="117.3dp"
+                android:layout_height="match_parent"
+                android:id="@+id/space6" />
+        </LinearLayout>
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="10.5dp"
+            android:id="@+id/space4" />
+        <LinearLayout
+            android:orientation="horizontal"
+            android:minWidth="25px"
+            android:minHeight="25px"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/linearLayout4"
+            android:gravity="center_horizontal">
+            <Button
+                android:text="Clear"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:id="@+id/buttonClear"
+                android:textStyle="bold"
+                android:onClick="OnButtonClicked" />
+            <Space
+                android:layout_width="40.4dp"
+                android:layout_height="match_parent"
+                android:id="@+id/space7" />
+            <Button
+                android:text="Save"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:id="@+id/buttonSave"
+                android:textStyle="bold|normal"
+                android:typeface="normal"
+                android:shadowColor="#ff000000"
+                android:fitsSystemWindows="true"
+                android:fadingEdge="horizontal"
+                android:fadingEdgeLength="25dp" />
+        </LinearLayout>
+    </LinearLayout>
+    <LinearLayout
+        android:orientation="vertical"
+        android:minWidth="25px"
+        android:minHeight="25px"
+        android:layout_width="match_parent"
+        android:layout_height="584.4dp"
+        android:id="@+id/CarRecord"
+        android:gravity="center_horizontal"
+        android:visibility="gone">
+        <ImageView
+            android:src="@android:drawable/ic_menu_gallery"
+            android:layout_width="370dp"
+            android:layout_height="222.9dp"
+            android:id="@+id/imgRecordEngine"
+            android:adjustViewBounds="false"
+            android:scaleType="center" />
+        <TextView
+            android:text="While the vehicle is idling, hold your phone directly above the center of the engine, about one foot away."
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:layout_width="370dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/textView6" />
+        <TextView
+            android:text=" After pressing record a tone will sound after a 3 second timer. Your phone will begin recording after the tone. "
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:layout_width="370dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/textView7" />
+        <TextView
+            android:text="Recording will last 15 seconds.  Please hold still and wait for the tone indicating that the recording is complete. "
+            android:layout_width="370dp"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:layout_height="wrap_content"
+            android:id="@+id/textView8" />
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="14.5dp"
+            android:id="@+id/space8" />
+        <Button
+            android:layout_width="120dp"
+            android:text="Record Engine"
+            android:layout_height="wrap_content"
+            android:id="@+id/buttonRecordEngine" />
+        <Button
+            android:text="Clear recording."
+            android:layout_width="123.4dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/buttonClearEngine" />
+    </LinearLayout>
+    <LinearLayout
+        android:orientation="vertical"
+        android:minWidth="25px"
+        android:minHeight="25px"
+        android:layout_width="match_parent"
+        android:layout_height="579.0dp"
+        android:id="@+id/notifySubmit"
+        android:gravity="center_horizontal"
+        android:visibility="gone">
+        <ImageView
+            android:src="@android:drawable/ic_menu_gallery"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/imageView1" />
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="12.6dp"
+            android:id="@+id/space10" />
+        <TextView
+            android:text="After your vehicle has been repaired, enter the fix on the line below.   Press submit to submit to send the data and remove the files from your phone."
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:layout_width="370dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/textView9" />
+        <AutoCompleteTextView
+            android:layout_width="370dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/carFix"
+            android:hint="When you know what was broken, enter it here. " />
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="13.3dp"
+            android:id="@+id/space9" />
+        <Button
+            android:text="Submit"
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/buttonSubmit" />
+        <Button
+            android:text="Info"
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/buttonInfo" />
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/space11"
+            android:layout_marginLeft="29.3dp"
+            android:layout_marginBottom="14.1dp"
+            android:layout_marginTop="0.0dp" />
+        <TextView
+            android:text="Please enable reminders if you have recorded an issue and have not submitted your fix. "
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:layout_width="370dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/textView11" />
+        <ToggleButton
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/buttonNotifications"
+            android:textOn="Reminders On."
+            android:textOff="Reminders Off." />
+        <TextView
+            android:text="If your ride is in great shape, you can still help!  Record your vehicle and enter baseline as the repair. "
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:layout_width="370dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/textView10" />
+        <TextView
+            android:text="Thank you for your contribution to science. "
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:layout_width="350dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/textView12" />
+    </LinearLayout>
+
+    <android.support.design.widget.BottomNavigationView
+        android:id="@+id/navigation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="0dp"
+        android:layout_marginStart="0dp"
+        android:background="?android:attr/windowBackground"
+        android:layout_alignParentBottom="true"
+        app:menu="@menu/navigation"
+        android:minWidth="25px"
+        android:minHeight="25px">
+
+    </android.support.design.widget.BottomNavigationView>
+
+</RelativeLayout>
