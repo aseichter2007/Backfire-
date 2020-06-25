@@ -1,6 +1,6 @@
 ﻿using Android.App;
+using Android.Content.PM;
 using Android.Media;
-using Android.Net.Http;
 using Android.OS;
 using Android.Runtime;
 using Android.Support.Design.Widget;
@@ -12,14 +12,17 @@ using Java.Lang;
 using System;
 using System.IO;
 using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Backfire
 {
-    [Activity(Label = "@string/app_name", Theme = "@style/AppTheme", MainLauncher = true)]
+    [Activity(Label = "@string/app_name", Theme = "@style/AppTheme", MainLauncher = true, ScreenOrientation = ScreenOrientation.Portrait)]
     public class MainActivity : AppCompatActivity, BottomNavigationView.IOnNavigationItemSelectedListener
     {
         TextView textMessage;
-        Android.App.AlertDialog _dialogue ;
+        Android.App.AlertDialog _dialogue;
+        MediaRecorder _recorder;
+
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -32,7 +35,7 @@ namespace Backfire
             navigation.SetOnNavigationItemSelectedListener(this);
 
             Button saveButton = FindViewById<Button>(Resource.Id.buttonSave);
-            saveButton.Click +=  OnSaveButtonClicked;
+            saveButton.Click += OnSaveButtonClicked;
 
             Button clearButton = FindViewById<Button>(Resource.Id.buttonClear);
             clearButton.Click += OnClearButtonClicked;
@@ -42,7 +45,7 @@ namespace Backfire
 
             Button buttonClearRecording = FindViewById<Button>(Resource.Id.buttonClearEngine);
             buttonClearRecording.Click += OnRecordClear;
-            
+
             Button infoButton = FindViewById<Button>(Resource.Id.buttonInfo);
             infoButton.Click += OnInfoClicked;
 
@@ -125,17 +128,27 @@ namespace Backfire
             var filepath = path + "/cardata.txt";
             if (!exists)
             {
+                //pretty sure I threw an exception here the first time I ran this I got an exception 
+                //and then never again. Dont know why, can't reproduce because now the directory exists.
                 Directory.CreateDirectory(path);
                 if (!System.IO.File.Exists(filepath))
                 {
                     var newfile = new Java.IO.File(path, "cardata.txt");
                     using (FileOutputStream cardata = new FileOutputStream(newfile))
-                    {                        
-                        cardata.Write(System.Text.Encoding.ASCII.GetBytes(make.Text));
-                        cardata.Write(System.Text.Encoding.ASCII.GetBytes(model.Text));
-                        cardata.Write(System.Text.Encoding.ASCII.GetBytes(year.Text));
+                    {
+                        cardata.Write(System.Text.Encoding.ASCII.GetBytes(make.Text + "&" + model.Text + "&" + year.Text));
                         cardata.Close();
                     }
+                }
+            }
+            else
+            {
+                var oldcardata = new Java.IO.File(path, "cardata.txt");//does this delete and create new?
+
+                using (FileOutputStream cardata = new FileOutputStream(oldcardata))
+                {
+                    cardata.Write(System.Text.Encoding.ASCII.GetBytes(make.Text + "&" + model.Text + "&" + year.Text));
+                    cardata.Close();
                 }
             }
 
@@ -170,12 +183,50 @@ namespace Backfire
         }
         public async void OnRecordConfirm(object sender, EventArgs args)
         {
-            AudioRecord enginerecorder = new AudioRecord(AudioSource.Mic, 44100, ChannelIn.Front, Encoding.Pcm16bit, 64000);
+            var path = this.FilesDir + "/data";
+            var engineaudio = new Java.IO.File(path, "engineaudio.3gp");
+            MediaRecorder mediaRecorder = new MediaRecorder();
+            mediaRecorder.SetAudioSource(AudioSource.Mic);
+            mediaRecorder.SetAudioEncoder(AudioEncoder.AmrNb);
+            mediaRecorder.SetOutputFormat(OutputFormat.ThreeGpp);
+            mediaRecorder.SetAudioEncodingBitRate(128);
+            mediaRecorder.SetOutputFile(engineaudio);
+            _recorder = mediaRecorder;
+            try
+            {
+                _recorder.Prepare();
+            }
+            catch (Java.IO.IOException exception)
+            {
+                _recorder.Reset();
+                _recorder.Release();
+                _recorder = null;
+                OnRecordConfirm(sender, args);
+            }
+            _recorder.Start();
+
+            var awaiter = await Waiter();
+
+            _recorder.Stop();
+            _recorder.Release();
+            _recorder = null;
+        }
+        public async Task<bool> Waiter()
+        {
+            Thread.Sleep(20000);
+            return true;
+        }
+        public async void RecordingFinished(object sender, EventArgs args)
+        {
 
         }
         public async void OnRecordClear(object sender, EventArgs args)
         {
+            var path = this.FilesDir + "/data";
+            var engineaudio = Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData), "/data/engineaudio.3gp");
 
+
+            var audiofile = new Java.IO.File(path, "engineaudio.3gp");
         }
         public async void OnInfoClicked(object sender, EventArgs args)
         {
@@ -202,13 +253,46 @@ namespace Backfire
             var formatfix = fix.Text.Replace(' ', '_');
             formatfix = formatfix.Replace(',', '-');
 
-            string audio; //todo: get audio
-            
+            var path = this.FilesDir + "/data";
+            var file = path + "engineaudio.3gp";
+
+            string audio; //todo: get audio into a format for sending off. 
+            var fileout = new Java.IO.FileInputStream(file);
+
+
             HttpClient client = new HttpClient();
-            HttpResponseMessage responseMessage= await client.PostAsync(
-                url + make.Text + formatmodel + formatfix, 
-                //todo: send audio in post body
-                );
+            //HttpResponseMessage responseMessage= await client.PostAsync(
+            //    url +"+"+ make.Text + "+" + formatmodel + "+" + formatfix,
+            //    //todo: send audio in post body
+            //    );
+
+
+            //if (responseMessage.IsSuccessStatusCode)
+            //{
+            //    ThankYouForYourContribution();
+            //}
+            //else
+            //{
+            //    SomethingWentWrong();
+            //}
+        }
+        public async void ThankYouForYourContribution()
+        {
+            Android.App.AlertDialog.Builder alert = new Android.App.AlertDialog.Builder(this);
+            alert.SetTitle("Thank you for your contribution.");
+            alert.SetMessage("With your help, we are making futuristic tools to help everyone!");
+            alert.SetNegativeButton("Ok", OnDialogDismiss);
+
+            _dialogue = alert.Show();
+        }
+        public async void SomethingWentWrong()
+        {
+            Android.App.AlertDialog.Builder alert = new Android.App.AlertDialog.Builder(this);
+            alert.SetTitle("Something went wrong");
+            alert.SetMessage("Please try submitting again. are you connected to the internet?");
+            alert.SetNegativeButton("Ok", OnDialogDismiss);
+
+            _dialogue = alert.Show();
         }
         public async void OnNotificationToggle(object sender, EventArgs args)
         {
@@ -228,4 +312,3 @@ namespace Backfire
         }
     }
 }
-

@@ -1,17 +1,18 @@
-<?xml version="1.0" encoding="utf-8"?>
+
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/container"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:foregroundGravity="center_horizontal">
     <LinearLayout
         android:orientation="vertical"
         android:minWidth="25px"
         android:minHeight="25px"
         android:layout_width="match_parent"
-        android:layout_height="493.5dp"
+        android:layout_height="498.0dp"
         android:layout_toLeftOf="@id/carInfo"
         android:id="@+id/disclaimer"
         android:gravity="center_horizontal">
@@ -331,7 +332,8 @@
         android:layout_alignParentBottom="true"
         app:menu="@menu/navigation"
         android:minWidth="25px"
-        android:minHeight="25px">
+        android:minHeight="25px"
+        android:foregroundGravity="center_horizontal" >
 
     </android.support.design.widget.BottomNavigationView>
 
