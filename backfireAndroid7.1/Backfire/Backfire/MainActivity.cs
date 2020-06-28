@@ -16,6 +16,7 @@ using Plugin.AudioRecorder;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -27,7 +28,8 @@ namespace Backfire
         TextView textMessage;
         Android.App.AlertDialog _dialogue;
         AudioRecorderService _recorder;
-        System.String serverAddress= "https://localhost:44322/api/values"; 
+        System.String serverAddress= "http://172.17.114.33:52251/api/values"; 
+        //xamarin debugs in a virtual machine, localhost cannot be used. find server ip with ipconfig and enter it above.
 
 
         protected override void OnCreate(Bundle savedInstanceState)
@@ -221,7 +223,7 @@ namespace Backfire
 
             _recorder = new AudioRecorderService();
             _recorder.StopRecordingAfterTimeout = true;
-            _recorder.StopRecordingOnSilence = true;
+            //_recorder.StopRecordingOnSilence = true;
             _recorder.FilePath = engineaudio;
 
             MediaPlayer beeper = MediaPlayer.Create(this, Resource.Raw.beep);
@@ -282,6 +284,11 @@ namespace Backfire
             var year = FindViewById<EditText>(Resource.Id.carYear);
             var fix = FindViewById<EditText>(Resource.Id.carFix);
 
+            if (fix.Text.Length<1||year.Text.Length<1||model.Text.Length<1||make.Text.Length<1)
+            {
+                PleaseFillAllFields();
+            }
+
             var path = this.FilesDir + "/data";
             var engineaudio = path + "/engineaudio.wav";
             if (System.IO.File.Exists(engineaudio))
@@ -311,13 +318,22 @@ namespace Backfire
                 }
                 else
                 {
-                    SomethingWentWrong();
+                    SomethingWentWrong();//this code was hit exactly once, and after no changes made, request times out.
                 }
             }
             else
             {
                 AudioNotFound();
             }
+        }
+        public async void PleaseFillAllFields()
+        {
+            Android.App.AlertDialog.Builder alert = new Android.App.AlertDialog.Builder(this);
+            alert.SetTitle("Info missing");
+            alert.SetMessage("please ensure that the make, model, year, and fix for your vehicle have been entered, then try submitting again.");
+            alert.SetNegativeButton("OK", OnDialogDismiss);
+
+            _dialogue = alert.Show();
         }
         public async void AudioNotFound()
         {
