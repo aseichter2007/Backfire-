@@ -86,7 +86,8 @@
             android:src="@android:drawable/ic_menu_gallery"
             android:layout_width="match_parent"
             android:layout_height="56.4dp"
-            android:id="@+id/mufflerBar" />
+            android:id="@+id/mufflerBar"
+            android:scaleType="fitCenter" />
         <TextView
             android:text="Make:"
             android:textAppearance="?android:attr/textAppearanceLarge"
@@ -208,14 +209,14 @@
         android:gravity="center_horizontal"
         android:visibility="gone">
         <ImageView
-            android:src="@android:drawable/ic_menu_gallery"
             android:layout_width="370dp"
             android:layout_height="222.9dp"
             android:id="@+id/imgRecordEngine"
-            android:adjustViewBounds="false"
-            android:scaleType="center" />
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
+             />
         <TextView
-            android:text="While the vehicle is idling, hold your phone directly above the center of the engine, about one foot away."
+            android:text="While the vehicle is idling, hold your phone directly above the center of the engine, about half way between the engine and the hood."
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:layout_width="370dp"
             android:layout_height="wrap_content"
@@ -227,7 +228,7 @@
             android:layout_height="wrap_content"
             android:id="@+id/textView7" />
         <TextView
-            android:text="Recording will last 15 seconds.  Please hold still and wait for the tone indicating that the recording is complete. "
+            android:text="Recording will take 30 seconds.  Please hold still and wait for the tone indicating that the recording is complete. If recording was shorter than 30 seconds, there was a problem. please don't submit your file.  "
             android:layout_width="370dp"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:layout_height="wrap_content"
@@ -260,7 +261,8 @@
             android:src="@android:drawable/ic_menu_gallery"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/imageView1" />
+            android:id="@+id/submitimg"
+            android:scaleType="fitCenter" />
         <Space
             android:layout_width="match_parent"
             android:layout_height="12.6dp"

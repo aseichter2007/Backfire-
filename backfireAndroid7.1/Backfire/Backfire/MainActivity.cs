@@ -1,15 +1,20 @@
-﻿using Android.App;
+﻿using Android;
+using Android.App;
 using Android.Content.PM;
 using Android.Media;
 using Android.OS;
 using Android.Runtime;
 using Android.Support.Design.Widget;
+using Android.Support.V4.App;
+using Android.Support.V4.Content;
 using Android.Support.V7.App;
 using Android.Views;
 using Android.Widget;
 using Java.IO;
 using Java.Lang;
+using Plugin.AudioRecorder;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -21,7 +26,8 @@ namespace Backfire
     {
         TextView textMessage;
         Android.App.AlertDialog _dialogue;
-        MediaRecorder _recorder;
+        AudioRecorderService _recorder;
+        System.String serverAddress= "https://localhost:44322/api/values"; 
 
 
         protected override void OnCreate(Bundle savedInstanceState)
@@ -33,6 +39,15 @@ namespace Backfire
             textMessage = FindViewById<TextView>(Resource.Id.message);
             BottomNavigationView navigation = FindViewById<BottomNavigationView>(Resource.Id.navigation);
             navigation.SetOnNavigationItemSelectedListener(this);
+
+            ImageView mufflerbar = FindViewById<ImageView>(Resource.Id.mufflerBar);
+            //set mufflerbar image
+
+            ImageView submitimg = FindViewById<ImageView>(Resource.Id.submitimg);
+            //set image
+
+            ImageView engineRecordImg = FindViewById<ImageView>(Resource.Id.imgRecordEngine);
+            engineRecordImg.SetImageResource(Resource.Drawable.enginerecord);
 
             Button saveButton = FindViewById<Button>(Resource.Id.buttonSave);
             saveButton.Click += OnSaveButtonClicked;
@@ -54,10 +69,10 @@ namespace Backfire
 
             Button notificationbutton = FindViewById<Button>(Resource.Id.buttonNotifications);
             notificationbutton.Click += OnNotificationToggle;
+            notificationbutton.Visibility = ViewStates.Invisible;//notifications not implemented.
 
             Button thankYoubutton = FindViewById<Button>(Resource.Id.buttonThankYou);
             thankYoubutton.Click += OnThankYou;
-
             var path = this.FilesDir + "/data";
             var exists = Directory.Exists(path);
             var filepath = path + "/cardata.txt";
@@ -67,8 +82,18 @@ namespace Backfire
                 var model = FindViewById<EditText>(Resource.Id.carModel);
                 var year = FindViewById<EditText>(Resource.Id.carYear);
 
-                //Todo: get data from file
-
+                //get data from file so its reaty to send later.
+                var carInfoFile = new StreamReader(filepath);
+                var info = carInfoFile.ReadLine();
+                var infoparts = info.Split('&');
+                make.Text = infoparts[0];
+                model.Text = infoparts[1];
+                year.Text = infoparts[2];
+            }
+            if (System.IO.File.Exists(path + "/engineaudio.wav"))
+            {
+                buttonRecordEngine.Visibility = ViewStates.Gone;
+                buttonClearRecording.Visibility = ViewStates.Visible;
             }
         }
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
@@ -128,8 +153,9 @@ namespace Backfire
             var filepath = path + "/cardata.txt";
             if (!exists)
             {
-                //pretty sure I threw an exception here the first time I ran this I got an exception 
-                //and then never again. Dont know why, can't reproduce because now the directory exists.
+                //pretty sure I threw an exception here the first time I ran this
+                //and then never again. Dont know why, can't reproduce because now the directory exists. 
+                //Worked when testing on device.  Not sure what data is sent to the device when debugging.
                 Directory.CreateDirectory(path);
                 if (!System.IO.File.Exists(filepath))
                 {
@@ -143,7 +169,7 @@ namespace Backfire
             }
             else
             {
-                var oldcardata = new Java.IO.File(path, "cardata.txt");//does this delete and create new?
+                var oldcardata = new Java.IO.File(path, "cardata.txt");//Does this delete and create new? Seems like it does.
 
                 using (FileOutputStream cardata = new FileOutputStream(oldcardata))
                 {
@@ -165,6 +191,13 @@ namespace Backfire
         }
         public async void OnRecordEngineClicked(object sender, EventArgs args)
         {
+            if (ActivityCompat.CheckSelfPermission(this, Manifest.Permission.RecordAudio) != (int)Permission.Granted)
+            {
+
+                ActivityCompat.RequestPermissions(this, new System.String[] { Manifest.Permission.RecordAudio }, 1);
+
+            }
+
             Android.App.AlertDialog.Builder alert = new Android.App.AlertDialog.Builder(this);
             alert.SetTitle("Recording quality matters");
             alert.SetMessage("Please minimize background noise and wind while recording.");
@@ -177,56 +210,57 @@ namespace Backfire
         {
             if (_dialogue != null)
             {
-                _dialogue.Dismiss();
+                _dialogue.Dismiss();//not sure if this is actually needed but if it isnt broke...
             }
 
         }
         public async void OnRecordConfirm(object sender, EventArgs args)
         {
             var path = this.FilesDir + "/data";
-            var engineaudio = new Java.IO.File(path, "engineaudio.3gp");
-            MediaRecorder mediaRecorder = new MediaRecorder();
-            mediaRecorder.SetAudioSource(AudioSource.Mic);
-            mediaRecorder.SetAudioEncoder(AudioEncoder.AmrNb);
-            mediaRecorder.SetOutputFormat(OutputFormat.ThreeGpp);
-            mediaRecorder.SetAudioEncodingBitRate(128);
-            mediaRecorder.SetOutputFile(engineaudio);
-            _recorder = mediaRecorder;
-            try
-            {
-                _recorder.Prepare();
-            }
-            catch (Java.IO.IOException exception)
-            {
-                _recorder.Reset();
-                _recorder.Release();
-                _recorder = null;
-                OnRecordConfirm(sender, args);
-            }
-            _recorder.Start();
+            var engineaudio = path+ "/engineaudio.wav";
 
-            var awaiter = await Waiter();
+            _recorder = new AudioRecorderService();
+            _recorder.StopRecordingAfterTimeout = true;
+            _recorder.StopRecordingOnSilence = true;
+            _recorder.FilePath = engineaudio;
 
-            _recorder.Stop();
-            _recorder.Release();
-            _recorder = null;
+            MediaPlayer beeper = MediaPlayer.Create(this, Resource.Raw.beep);
+            await WaitSeconds(3);
+            beeper.Start();
+            await WaitSeconds(1);
+            await _recorder.StartRecording();
+
+
+            Button buttonClearRecording = FindViewById<Button>(Resource.Id.buttonClearEngine);
+            buttonClearRecording.Visibility = ViewStates.Visible;
+
+            Button buttonRecordEngine = FindViewById<Button>(Resource.Id.buttonRecordEngine);
+            buttonRecordEngine.Visibility = ViewStates.Gone;
+
+            beeper.Start();
+            await WaitSeconds(1);
+            beeper.Release();
         }
-        public async Task<bool> Waiter()
+        public async Task WaitSeconds(int num)//new thread to prevent possible interference recording
         {
-            Thread.Sleep(20000);
-            return true;
+            Thread.Sleep(num*1000);
         }
-        public async void RecordingFinished(object sender, EventArgs args)
-        {
 
-        }
         public async void OnRecordClear(object sender, EventArgs args)
         {
             var path = this.FilesDir + "/data";
-            var engineaudio = Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData), "/data/engineaudio.3gp");
+            var engineaudio = path + "/engineaudio.wav";
 
+            if (System.IO.File.Exists(engineaudio))
+            {
+                System.IO.File.Delete(engineaudio);
+            }
+            Button buttonClearRecording = FindViewById<Button>(Resource.Id.buttonClearEngine);
+            buttonClearRecording.Visibility = ViewStates.Gone;
 
-            var audiofile = new Java.IO.File(path, "engineaudio.3gp");
+            Button buttonRecordEngine = FindViewById<Button>(Resource.Id.buttonRecordEngine);
+            buttonRecordEngine.Visibility = ViewStates.Visible;
+
         }
         public async void OnInfoClicked(object sender, EventArgs args)
         {
@@ -242,39 +276,57 @@ namespace Backfire
         }
         public async void OnSubmitClicked(object sender, EventArgs args)
         {
-            var url = "localhost:port/api/values";
 
             var make = FindViewById<EditText>(Resource.Id.carMake);
             var model = FindViewById<EditText>(Resource.Id.carModel);
             var year = FindViewById<EditText>(Resource.Id.carYear);
             var fix = FindViewById<EditText>(Resource.Id.carFix);
-            var formatmodel = model.Text.Replace(' ', '_');
-            formatmodel = formatmodel.Replace(',', '-');
-            var formatfix = fix.Text.Replace(' ', '_');
-            formatfix = formatfix.Replace(',', '-');
 
             var path = this.FilesDir + "/data";
-            var file = path + "engineaudio.3gp";
+            var engineaudio = path + "/engineaudio.wav";
+            if (System.IO.File.Exists(engineaudio))
+            {
+                var file = System.IO.File.ReadAllBytes(engineaudio);
+                var filestring = file.ToString(); 
+                var sendfile = new Dictionary<string, string>() { 
+                    { "file", filestring },
+                    { "make",make.Text },
+                    { "model",model.Text },
+                    { "year",year.Text },
+                    { "fix",fix.Text } 
+                };
 
-            string audio; //todo: get audio into a format for sending off. 
-            var fileout = new Java.IO.FileInputStream(file);
+                var content = new FormUrlEncodedContent(sendfile);
+                HttpClient client = new HttpClient();
+                
+                HttpResponseMessage responseMessage = await client.PostAsync(
+                    serverAddress,
+                    content
+                    );
 
 
-            HttpClient client = new HttpClient();
-            //HttpResponseMessage responseMessage= await client.PostAsync(
-            //    url +"+"+ make.Text + "+" + formatmodel + "+" + formatfix,
-            //    //todo: send audio in post body
-            //    );
+                if (responseMessage.IsSuccessStatusCode)
+                {
+                    ThankYouForYourContribution();
+                }
+                else
+                {
+                    SomethingWentWrong();
+                }
+            }
+            else
+            {
+                AudioNotFound();
+            }
+        }
+        public async void AudioNotFound()
+        {
+            Android.App.AlertDialog.Builder alert = new Android.App.AlertDialog.Builder(this);
+            alert.SetTitle("Audio not found");
+            alert.SetMessage("You do not have a saved recording. If your vehicle has already been repaired, enter baseline on the repair line after recording new audio.");
+            alert.SetNegativeButton("OK", OnDialogDismiss);
 
-
-            //if (responseMessage.IsSuccessStatusCode)
-            //{
-            //    ThankYouForYourContribution();
-            //}
-            //else
-            //{
-            //    SomethingWentWrong();
-            //}
+            _dialogue = alert.Show();
         }
         public async void ThankYouForYourContribution()
         {
@@ -296,7 +348,7 @@ namespace Backfire
         }
         public async void OnNotificationToggle(object sender, EventArgs args)
         {
-
+            //todo notifications, not part of minimum reqirements.
         }
         public async void OnThankYou(object sender, EventArgs args)
         {
