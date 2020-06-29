@@ -26,7 +26,6 @@ namespace BackfireBackend.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromForm] PostedData file)
         {
-            //If this takes off I need a semaphore or an SSD to keep the disk from write saturating.
             if (!ModelState.IsValid||file.file==null||file.file=="")
             {
                 return BadRequest(ModelState);
@@ -41,7 +40,6 @@ namespace BackfireBackend.Controllers
             }
 
             System.IO.File.WriteAllText(currentLocation + fileRoute + fileNumber + ".wav", file.file);
-
 
             return Ok();
         }

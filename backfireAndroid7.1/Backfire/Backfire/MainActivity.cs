@@ -42,7 +42,6 @@ namespace Backfire
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             SetContentView(Resource.Layout.activity_main);
 
-            textMessage = FindViewById<TextView>(Resource.Id.message);
             BottomNavigationView navigation = FindViewById<BottomNavigationView>(Resource.Id.navigation);
             navigation.SetOnNavigationItemSelectedListener(this);
 
@@ -81,7 +80,7 @@ namespace Backfire
             {
                 buttonRecordEngine.Visibility = ViewStates.Gone;
                 buttonClearRecording.Visibility = ViewStates.Visible;
-                submitButton.Visibility = ViewStates.Invisible;
+                submitButton.Visibility = ViewStates.Visible;
             }
 
 
@@ -304,49 +303,52 @@ namespace Backfire
 
             if (fix.Text.Length<1||year.Text.Length<1||model.Text.Length<1||make.Text.Length<1)
             {
-                PleaseFillAllFields();
-            }
-
-            var path = this.FilesDir + "/data";
-            var engineaudio = path + "/engineaudio.wav";
-            if (System.IO.File.Exists(engineaudio))
-            {
-                Button submit = FindViewById<Button>(Resource.Id.buttonSubmit);
-                submit.Visibility = ViewStates.Invisible;
-
-                var file = System.IO.File.ReadAllBytes(engineaudio);
-                var filestring = file.ToString(); 
-                var sendfile = new Dictionary<string, string>() { 
-                    { "file", filestring },
-                    { "make",make.Text },
-                    { "model",model.Text },
-                    { "year",year.Text },
-                    { "fix",fix.Text } 
-                };
-
-                var content = new FormUrlEncodedContent(sendfile);
-                HttpClient client = new HttpClient();
-                
-                HttpResponseMessage responseMessage = await client.PostAsync(
-                    serverAddress,
-                    content
-                    );
-
-
-                if (responseMessage.IsSuccessStatusCode)
-                {
-                    ThankYouForYourContribution();
-                }
-                else
-                {
-                    SomethingWentWrong();
-                    //this code was hit exactly once, and after no changes made, request times out.
-                    submit.Visibility = ViewStates.Visible;
-                }
+                PleaseFillAllFields();                
             }
             else
             {
-                AudioNotFound();
+                var path = this.FilesDir + "/data";
+                var engineaudio = path + "/engineaudio.wav";
+                if (System.IO.File.Exists(engineaudio))
+                {
+                    Button submit = FindViewById<Button>(Resource.Id.buttonSubmit);
+                    submit.Visibility = ViewStates.Invisible;
+
+                    var file = System.IO.File.ReadAllBytes(engineaudio);
+                    string filestring = System.Text.Encoding.ASCII.GetString(file);
+
+                    var sendfile = new Dictionary<string, string>() { 
+                        { "file", filestring },
+                        { "make",make.Text },
+                        { "model",model.Text },
+                        { "year",year.Text },
+                        { "fix",fix.Text } 
+                    };
+
+                    var content = new FormUrlEncodedContent(sendfile);
+                    HttpClient client = new HttpClient();
+                
+                    HttpResponseMessage responseMessage = await client.PostAsync(
+                        serverAddress,
+                        content
+                        );
+
+
+                    if (responseMessage.IsSuccessStatusCode)
+                    {
+                        ThankYouForYourContribution();
+                    }
+                    else
+                    {
+                        SomethingWentWrong();
+                        //this code was hit exactly once, and after no changes made, request times out.
+                        submit.Visibility = ViewStates.Visible;
+                    }
+                }
+                else
+                {
+                    AudioNotFound();
+                }
             }
         }
         public async void PleaseFillAllFields()
