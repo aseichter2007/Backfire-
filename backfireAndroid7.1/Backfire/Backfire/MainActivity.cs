@@ -506,9 +506,11 @@ namespace Backfire
                             submit.Visibility = ViewStates.Visible;
                         }
                     }
-                    catch (System.Exception)
+                    catch (System.Exception e)
                     {
-                        SomethingWentWrong();
+                        
+                        SomethingWentWrong(e.Message);
+                        submit.Visibility = ViewStates.Visible;
                     }
                 }
                 else
@@ -558,6 +560,15 @@ namespace Backfire
             Android.App.AlertDialog.Builder alert = new Android.App.AlertDialog.Builder(this);
             alert.SetTitle("Something went wrong");
             alert.SetMessage("Please try submitting again. are you connected to the internet?");
+            alert.SetNegativeButton("Ok", OnDialogDismiss);
+
+            _dialogue = alert.Show();
+        }
+        public async void SomethingWentWrong(string message)
+        {
+            Android.App.AlertDialog.Builder alert = new Android.App.AlertDialog.Builder(this);
+            alert.SetTitle("Something went wrong");
+            alert.SetMessage("Please try submitting again. are you connected to the internet? error: "+message );
             alert.SetNegativeButton("Ok", OnDialogDismiss);
 
             _dialogue = alert.Show();
