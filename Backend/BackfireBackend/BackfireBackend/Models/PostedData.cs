@@ -10,7 +10,7 @@ namespace BackfireBackend.Models
         public string file { get; set; }
         public string make { get; set; }
         public string model { get; set; }
-        public string year { get; set; }
+        public int year { get; set; }
         public string fix { get; set; }
 
     }

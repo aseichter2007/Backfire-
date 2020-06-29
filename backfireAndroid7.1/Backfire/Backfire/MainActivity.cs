@@ -25,7 +25,6 @@ namespace Backfire
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme", MainLauncher = true, ScreenOrientation = ScreenOrientation.Portrait)]
     public class MainActivity : AppCompatActivity, BottomNavigationView.IOnNavigationItemSelectedListener
     {
-        TextView textMessage;
         Android.App.AlertDialog _dialogue;
         AudioRecorderService _recorder;
         System.String serverAddress= "http://172.17.114.33:52251/api/values"; 
@@ -34,6 +33,11 @@ namespace Backfire
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
+            var path = this.FilesDir + "/data";
+            var engineaudio = path + "/engineaudio.wav";
+            var exists = Directory.Exists(path);
+            var filepath = path + "/cardata.txt";
+
             base.OnCreate(savedInstanceState);
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             SetContentView(Resource.Layout.activity_main);
@@ -43,9 +47,11 @@ namespace Backfire
             navigation.SetOnNavigationItemSelectedListener(this);
 
             ImageView mufflerbar = FindViewById<ImageView>(Resource.Id.mufflerBar);
+            mufflerbar.Visibility = ViewStates.Invisible;
             //set mufflerbar image
 
             ImageView submitimg = FindViewById<ImageView>(Resource.Id.submitimg);
+            submitimg.Visibility = ViewStates.Invisible;
             //set image
 
             ImageView engineRecordImg = FindViewById<ImageView>(Resource.Id.imgRecordEngine);
@@ -62,6 +68,8 @@ namespace Backfire
 
             Button buttonClearRecording = FindViewById<Button>(Resource.Id.buttonClearEngine);
             buttonClearRecording.Click += OnRecordClear;
+            buttonClearRecording.Visibility = ViewStates.Gone;
+            
 
             Button infoButton = FindViewById<Button>(Resource.Id.buttonInfo);
             infoButton.Click += OnInfoClicked;
@@ -69,15 +77,20 @@ namespace Backfire
             Button submitButton = FindViewById<Button>(Resource.Id.buttonSubmit);
             submitButton.Click += OnSubmitClicked;
 
+            if (System.IO.File.Exists(engineaudio))
+            {
+                buttonRecordEngine.Visibility = ViewStates.Gone;
+                buttonClearRecording.Visibility = ViewStates.Visible;
+                submitButton.Visibility = ViewStates.Invisible;
+            }
+
+
             Button notificationbutton = FindViewById<Button>(Resource.Id.buttonNotifications);
             notificationbutton.Click += OnNotificationToggle;
             notificationbutton.Visibility = ViewStates.Invisible;//notifications not implemented.
 
             Button thankYoubutton = FindViewById<Button>(Resource.Id.buttonThankYou);
             thankYoubutton.Click += OnThankYou;
-            var path = this.FilesDir + "/data";
-            var exists = Directory.Exists(path);
-            var filepath = path + "/cardata.txt";
             if (System.IO.File.Exists(filepath))
             {
                 var make = FindViewById<EditText>(Resource.Id.carMake);
@@ -114,7 +127,6 @@ namespace Backfire
             switch (item.ItemId)
             {
                 case Resource.Id.navigation_home:
-                    // textMessage.SetText(Resource.String.title_home);
                     disclaimer.Visibility = ViewStates.Gone;
                     carInfoPanel.Visibility = ViewStates.Visible;
                     carRecordPanel.Visibility = ViewStates.Gone;
@@ -122,14 +134,12 @@ namespace Backfire
 
                     return true;
                 case Resource.Id.navigation_dashboard:
-                    // textMessage.SetText(Resource.String.title_dashboard);
                     disclaimer.Visibility = ViewStates.Gone;
                     carInfoPanel.Visibility = ViewStates.Gone;
                     carRecordPanel.Visibility = ViewStates.Visible;
                     carSubmission.Visibility = ViewStates.Gone;
                     return true;
                 case Resource.Id.navigation_notifications:
-                    // textMessage.SetText(Resource.String.title_notifications);
                     disclaimer.Visibility = ViewStates.Gone;
                     carInfoPanel.Visibility = ViewStates.Gone;
                     carRecordPanel.Visibility = ViewStates.Gone;
@@ -171,7 +181,7 @@ namespace Backfire
             }
             else
             {
-                var oldcardata = new Java.IO.File(path, "cardata.txt");//Does this delete and create new? Seems like it does.
+                var oldcardata = new Java.IO.File(path, "cardata.txt");
 
                 using (FileOutputStream cardata = new FileOutputStream(oldcardata))
                 {
@@ -212,12 +222,16 @@ namespace Backfire
         {
             if (_dialogue != null)
             {
-                _dialogue.Dismiss();//not sure if this is actually needed but if it isnt broke...
+                _dialogue.Dismiss();
+                //not sure if this is actually needed but if it isnt broke...
             }
 
         }
         public async void OnRecordConfirm(object sender, EventArgs args)
         {
+            Button buttonRecordEngine = FindViewById<Button>(Resource.Id.buttonRecordEngine);
+            buttonRecordEngine.Visibility = ViewStates.Gone;
+
             var path = this.FilesDir + "/data";
             var engineaudio = path+ "/engineaudio.wav";
 
@@ -230,20 +244,20 @@ namespace Backfire
             await WaitSeconds(3);
             beeper.Start();
             await WaitSeconds(1);
-            await _recorder.StartRecording();
-
+            var awaiter = await _recorder.StartRecording();//why isnt this working? 
+            //I dont think its getting a valid audio source.
 
             Button buttonClearRecording = FindViewById<Button>(Resource.Id.buttonClearEngine);
             buttonClearRecording.Visibility = ViewStates.Visible;
 
-            Button buttonRecordEngine = FindViewById<Button>(Resource.Id.buttonRecordEngine);
-            buttonRecordEngine.Visibility = ViewStates.Gone;
+            Button submit = FindViewById<Button>(Resource.Id.buttonSubmit);
+            submit.Visibility = ViewStates.Visible;
 
             beeper.Start();
             await WaitSeconds(1);
             beeper.Release();
         }
-        public async Task WaitSeconds(int num)//new thread to prevent possible interference recording
+        public async Task WaitSeconds(int num)
         {
             Thread.Sleep(num*1000);
         }
@@ -263,6 +277,9 @@ namespace Backfire
             Button buttonRecordEngine = FindViewById<Button>(Resource.Id.buttonRecordEngine);
             buttonRecordEngine.Visibility = ViewStates.Visible;
 
+            Button submit = FindViewById<Button>(Resource.Id.buttonSubmit);
+            submit.Visibility = ViewStates.Invisible;
+
         }
         public async void OnInfoClicked(object sender, EventArgs args)
         {
@@ -278,6 +295,7 @@ namespace Backfire
         }
         public async void OnSubmitClicked(object sender, EventArgs args)
         {
+            
 
             var make = FindViewById<EditText>(Resource.Id.carMake);
             var model = FindViewById<EditText>(Resource.Id.carModel);
@@ -293,6 +311,9 @@ namespace Backfire
             var engineaudio = path + "/engineaudio.wav";
             if (System.IO.File.Exists(engineaudio))
             {
+                Button submit = FindViewById<Button>(Resource.Id.buttonSubmit);
+                submit.Visibility = ViewStates.Invisible;
+
                 var file = System.IO.File.ReadAllBytes(engineaudio);
                 var filestring = file.ToString(); 
                 var sendfile = new Dictionary<string, string>() { 
@@ -318,7 +339,9 @@ namespace Backfire
                 }
                 else
                 {
-                    SomethingWentWrong();//this code was hit exactly once, and after no changes made, request times out.
+                    SomethingWentWrong();
+                    //this code was hit exactly once, and after no changes made, request times out.
+                    submit.Visibility = ViewStates.Visible;
                 }
             }
             else

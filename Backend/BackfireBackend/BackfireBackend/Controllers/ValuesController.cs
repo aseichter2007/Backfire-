@@ -22,16 +22,9 @@ namespace BackfireBackend.Controllers
             return new string[] { "not", "used" };
         }
 
-        // GET api/<ValuesController>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
-        {
-            return "not used";
-        }
-
         // POST api/<ValuesController>/routing
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] PostedData file)
+        public async Task<IActionResult> Post([FromForm] PostedData file)
         {
             //If this takes off I need a semaphore or an SSD to keep the disk from write saturating.
             if (!ModelState.IsValid||file.file==null||file.file=="")
