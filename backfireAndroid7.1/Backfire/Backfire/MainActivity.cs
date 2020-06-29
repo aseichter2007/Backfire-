@@ -12,6 +12,7 @@ using Android.Views;
 using Android.Widget;
 using Java.IO;
 using Java.Lang;
+using Newtonsoft.Json;
 using Plugin.AudioRecorder;
 using System;
 using System.Collections.Generic;
@@ -244,7 +245,7 @@ namespace Backfire
             beeper.Start();
             await WaitSeconds(1);
             var awaiter = await _recorder.StartRecording();//why isnt this working? 
-            //I dont think its getting a valid audio source.
+            //I dont think its getting a valid audio source.  not sure how to debug the inner workings.
 
             Button buttonClearRecording = FindViewById<Button>(Resource.Id.buttonClearEngine);
             buttonClearRecording.Visibility = ViewStates.Visible;
@@ -256,7 +257,155 @@ namespace Backfire
             await WaitSeconds(1);
             beeper.Release();
         }
-        public async Task WaitSeconds(int num)
+        //possible alternative audio record method. not complete, needs class member variables and to be in more pieces to allow separate thread to time recording.
+        //public async void OnRecordConfirmV2(object sender, EventArgs args)
+        //{
+        //    Button buttonRecordEngine = FindViewById<Button>(Resource.Id.buttonRecordEngine);
+        //    buttonRecordEngine.Visibility = ViewStates.Gone;
+
+        //    var path = this.FilesDir + "/data";
+        //    var engineaudio = path + "/engineaudio.wav";
+
+        //    MediaRecorder mediaRecorder = new MediaRecorder();
+
+        //    System.IO.Stream outputStream = System.IO.File.Open(engineaudio, FileMode.Create);
+        //    BinaryWriter bWriter = new BinaryWriter(outputStream);
+
+        //    audioBuffer = new byte[8000];
+
+        //    audRecorder = new AudioRecord(
+        //        // Hardware source of recording.
+        //        AudioSource.Mic,
+        //        // Frequency
+        //        11025,
+        //        // Mono or stereo
+        //        ChannelIn.Mono,
+        //        // Audio encoding
+        //        Android.Media.Encoding.Pcm16bit,
+        //        // Length of the audio clip.
+        //        audioBuffer.Length
+        //    );
+
+        //    long totalAudioLen = 0;
+        //    long totalDataLen = totalAudioLen + 36;
+        //    long longSampleRate = 11025;
+        //    int channels = 2;
+        //    long byteRate = 16 * longSampleRate * channels / 8;
+
+        //    totalAudioLen = audioBuffer.Length;
+        //    totalDataLen = totalAudioLen + 36;
+
+        //    WriteWaveFileHeader(
+        //        bWriter,
+        //        totalAudioLen,
+        //        totalDataLen,
+        //        longSampleRate,
+        //        channels,
+        //        byteRate);
+
+           
+       
+
+
+        ////AudioRecord audioRecord = new AudioRecord(AudioSource.Mic, 44100, ChannelIn.Mono,Encoding.Pcm16bit, 128000);
+            
+
+        //    MediaPlayer beeper = MediaPlayer.Create(this, Resource.Raw.beep);
+        //    await WaitSeconds(3);
+        //    beeper.Start();
+        //    await WaitSeconds(1);
+
+        //    audRecorder.StartRecording();
+
+        //    //while (_isRecording == true)
+        //    //{
+        //        try
+        //        {
+        //            /// Keep reading the buffer while there is audio input.
+        //            audioData = audRecorder.Read(audioBuffer, 0, audioBuffer.Length);
+
+        //            bWriter.Write(audioBuffer);
+        //        }
+        //        catch (System.Exception ex)
+        //        {
+        //            System.Console.Out.WriteLine(ex.Message);
+        //            break;
+        //        }
+        //   // }
+           
+        //    outputStream.Close();
+        //    bWriter.Close();
+
+        //    var audioid = audioRecord.AudioSessionId;
+        //    var audio = FindViewById(audioid);
+
+
+
+        //    Button buttonClearRecording = FindViewById<Button>(Resource.Id.buttonClearEngine);
+        //    buttonClearRecording.Visibility = ViewStates.Visible;
+
+        //    Button submit = FindViewById<Button>(Resource.Id.buttonSubmit);
+        //    submit.Visibility = ViewStates.Visible;
+
+
+        //    beeper.Start();
+        //    await WaitSeconds(1);
+        //    beeper.Release();
+        //}
+        private void WriteWaveFileHeader(BinaryWriter bWriter, long totalAudioLen, long totalDataLen, long longSampleRate, int channels, long byteRate)
+        {
+
+            byte[] header = new byte[44];
+
+            header[0] = (byte)'R'; // RIFF/WAVE header
+            header[1] = (byte)'I';
+            header[2] = (byte)'F';
+            header[3] = (byte)'F';
+            header[4] = (byte)(totalDataLen & 0xff);
+            header[5] = (byte)((totalDataLen >> 8) & 0xff);
+            header[6] = (byte)((totalDataLen >> 16) & 0xff);
+            header[7] = (byte)((totalDataLen >> 24) & 0xff);
+            header[8] = (byte)'W';
+            header[9] = (byte)'A';
+            header[10] = (byte)'V';
+            header[11] = (byte)'E';
+            header[12] = (byte)'f'; // 'fmt ' chunk
+            header[13] = (byte)'m';
+            header[14] = (byte)'t';
+            header[15] = (byte)' ';
+            header[16] = 16; // 4 bytes: size of 'fmt ' chunk
+            header[17] = 0;
+            header[18] = 0;
+            header[19] = 0;
+            header[20] = 1; // format = 1
+            header[21] = 0;
+            header[22] = (byte)channels;
+            header[23] = 0;
+            header[24] = (byte)(longSampleRate & 0xff);
+            header[25] = (byte)((longSampleRate >> 8) & 0xff);
+            header[26] = (byte)((longSampleRate >> 16) & 0xff);
+            header[27] = (byte)((longSampleRate >> 24) & 0xff);
+            header[28] = (byte)(byteRate & 0xff);
+            header[29] = (byte)((byteRate >> 8) & 0xff);
+            header[30] = (byte)((byteRate >> 16) & 0xff);
+            header[31] = (byte)((byteRate >> 24) & 0xff);
+            header[32] = (byte)(2 * 16 / 8); // block align
+            header[33] = 0;
+            header[34] = 16; // bits per sample
+            header[35] = 0;
+            header[36] = (byte)'d';
+            header[37] = (byte)'a';
+            header[38] = (byte)'t';
+            header[39] = (byte)'a';
+            header[40] = (byte)(totalAudioLen & 0xff);
+            header[41] = (byte)((totalAudioLen >> 8) & 0xff);
+            header[42] = (byte)((totalAudioLen >> 16) & 0xff);
+            header[43] = (byte)((totalAudioLen >> 24) & 0xff);
+
+            bWriter.Write(header, 0, 44);
+        }
+    
+    public async Task WaitSeconds(int num)
         {
             Thread.Sleep(num*1000);
         }
@@ -307,6 +456,7 @@ namespace Backfire
             }
             else
             {
+                Sending();
                 var path = this.FilesDir + "/data";
                 var engineaudio = path + "/engineaudio.wav";
                 if (System.IO.File.Exists(engineaudio))
@@ -315,34 +465,50 @@ namespace Backfire
                     submit.Visibility = ViewStates.Invisible;
 
                     var file = System.IO.File.ReadAllBytes(engineaudio);
-                    string filestring = System.Text.Encoding.ASCII.GetString(file);
+                    string filestring = System.Text.Encoding.UTF8.GetString(file);
 
-                    var sendfile = new Dictionary<string, string>() { 
+                    /*var sendfile = new Dictionary<string, string>() { 
                         { "file", filestring },
                         { "make",make.Text },
                         { "model",model.Text },
                         { "year",year.Text },
                         { "fix",fix.Text } 
+                    };*/
+
+                    var contentProtoJson = new
+                    {
+                        file = file,
+                        make = make.Text,
+                        model = model.Text,
+                        year = year.Text,
+                        fix = fix.Text
                     };
 
-                    var content = new FormUrlEncodedContent(sendfile);
+                    var payload = JsonConvert.SerializeObject(contentProtoJson);
+                    var content = new StringContent(payload, System.Text.Encoding.UTF8, "application/json");
                     HttpClient client = new HttpClient();
-                
-                    HttpResponseMessage responseMessage = await client.PostAsync(
-                        serverAddress,
-                        content
-                        );
-
-
-                    if (responseMessage.IsSuccessStatusCode)
+                    HttpResponseMessage responseMessage;
+                    try
                     {
-                        ThankYouForYourContribution();
+                        responseMessage = await client.PostAsync(
+                                              serverAddress,
+                                              content
+                                              );
+
+                        if (responseMessage.IsSuccessStatusCode)
+                        {
+                            ThankYouForYourContribution();
+                        }
+                        else
+                        {
+                            SomethingWentWrong();
+                            //this code was hit exactly once, and after no changes made, request times out.
+                            submit.Visibility = ViewStates.Visible;
+                        }
                     }
-                    else
+                    catch (System.Exception)
                     {
                         SomethingWentWrong();
-                        //this code was hit exactly once, and after no changes made, request times out.
-                        submit.Visibility = ViewStates.Visible;
                     }
                 }
                 else
@@ -350,6 +516,15 @@ namespace Backfire
                     AudioNotFound();
                 }
             }
+        }
+        public async void Sending()
+        {
+            Android.App.AlertDialog.Builder alert = new Android.App.AlertDialog.Builder(this);
+            alert.SetTitle("Sending data");
+            alert.SetMessage("This msy take a moment, please be patient and wait for confirmation.");
+            alert.SetNegativeButton("OK", OnDialogDismiss);
+
+            _dialogue = alert.Show();
         }
         public async void PleaseFillAllFields()
         {

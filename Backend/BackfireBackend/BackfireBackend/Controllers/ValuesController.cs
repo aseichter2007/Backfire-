@@ -24,7 +24,7 @@ namespace BackfireBackend.Controllers
 
         // POST api/<ValuesController>/routing
         [HttpPost]
-        public async Task<IActionResult> Post([FromForm] PostedData file)
+        public async Task<IActionResult> Post([FromBody] PostedData file)
         {
             if (!ModelState.IsValid||file.file==null||file.file=="")
             {
